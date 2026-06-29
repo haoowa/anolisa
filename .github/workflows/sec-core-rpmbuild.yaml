@@ -20,7 +20,7 @@ env:
 jobs:
   build-rpm:
     name: Build agent-sec-core RPM
-    runs-on: anolisa-k8s-ubuntu22
+    runs-on: anolisa-k8s-general-ci-x64
     container:
       image: alibaba-cloud-linux-4-registry.cn-hangzhou.cr.aliyuncs.com/alinux4/alinux4:latest
     steps:

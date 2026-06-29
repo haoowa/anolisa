@@ -43,7 +43,7 @@ jobs:
   # =========================================================================
   package-preview:
     name: Packaging Preview ${{ inputs.component }}-${{ inputs.version }}
-    runs-on: anolisa-k8s-ubuntu22
+    runs-on: anolisa-k8s-amd-release
     steps:
       - uses: actions/checkout@v4
 

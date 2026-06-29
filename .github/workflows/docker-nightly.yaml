@@ -26,7 +26,7 @@ jobs:
   # ===========================================================================
   versions:
     name: Calculate Versions
-    runs-on: anolisa-k8s-ubuntu22
+    runs-on: anolisa-k8s-amd-nightly
     outputs:
       cosh-version: ${{ steps.cosh.outputs.version }}
       skill-version: ${{ steps.skill.outputs.version }}
@@ -144,7 +144,7 @@ jobs:
   # ===========================================================================
   package-cosh:
     name: "Package: copilot-shell"
-    runs-on: anolisa-k8s-ubuntu22
+    runs-on: anolisa-k8s-amd-nightly
     needs: versions
     steps:
       - uses: actions/checkout@v4
@@ -159,7 +159,7 @@ jobs:
 
   package-skill:
     name: "Package: os-skills"
-    runs-on: anolisa-k8s-ubuntu22
+    runs-on: anolisa-k8s-amd-nightly
     needs: versions
     steps:
       - uses: actions/checkout@v4
@@ -176,7 +176,7 @@ jobs:
 
   package-tokenless:
     name: "Package: tokenless"
-    runs-on: anolisa-k8s-ubuntu22
+    runs-on: anolisa-k8s-amd-nightly
     needs: versions
     steps:
       - uses: actions/checkout@v4
@@ -191,7 +191,7 @@ jobs:
 
   package-ws-ckpt:
     name: "Package: ws-ckpt"
-    runs-on: anolisa-k8s-ubuntu22
+    runs-on: anolisa-k8s-amd-nightly
     needs: versions
     steps:
       - uses: actions/checkout@v4
@@ -214,7 +214,7 @@ jobs:
 
   package-agent-memory:
     name: "Package: agent-memory"
-    runs-on: anolisa-k8s-ubuntu22
+    runs-on: anolisa-k8s-amd-nightly
     needs: versions
     steps:
       - uses: actions/checkout@v4
@@ -237,7 +237,7 @@ jobs:
 
   package-skillfs:
     name: "Package: skillfs"
-    runs-on: anolisa-k8s-ubuntu22
+    runs-on: anolisa-k8s-amd-nightly
     needs: versions
     steps:
       - uses: actions/checkout@v4
@@ -260,7 +260,7 @@ jobs:
 
   package-sight:
     name: "Package: agentsight"
-    runs-on: anolisa-k8s-ubuntu22
+    runs-on: anolisa-k8s-amd-nightly
     needs: versions
     steps:
       - uses: actions/checkout@v4
@@ -282,7 +282,7 @@ jobs:
 
   package-sec-core:
     name: "Package: agent-sec-core"
-    runs-on: anolisa-k8s-ubuntu22
+    runs-on: anolisa-k8s-amd-nightly
     needs: versions
     if: needs.versions.outputs.sec-core-ref != ''
     steps:
@@ -425,7 +425,7 @@ jobs:
   # ===========================================================================
   docker-build-push:
     name: Build & Push Docker Image
-    runs-on: anolisa-k8s-ubuntu22
+    runs-on: anolisa-k8s-amd-nightly
     needs:
       - versions
       - rpm-cosh

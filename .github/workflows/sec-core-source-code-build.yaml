@@ -29,7 +29,7 @@ jobs:
           - name: Alinux4
             container: alibaba-cloud-linux-4-registry.cn-hangzhou.cr.aliyuncs.com/alinux4/alinux4:latest
     name: Source Build (${{ matrix.name }})
-    runs-on: anolisa-k8s-ubuntu22
+    runs-on: anolisa-k8s-general-ci-x64
     container: ${{ matrix.container || '' }}
     steps:
       - name: Configure mirrors and install base tools (Alinux4)

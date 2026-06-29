@@ -37,7 +37,7 @@ env:
 jobs:
   build-rpm:
     name: "Build"
-    runs-on: ${{ inputs.arch == 'arm64' && 'anolisa-k8s-arm2204' || 'anolisa-k8s-ubuntu22' }}
+    runs-on: ${{ inputs.arch == 'arm64' && 'anolisa-k8s-arm2204-nightly' || 'anolisa-k8s-amd-nightly' }}
     container:
       image: alibaba-cloud-linux-4-registry.cn-hangzhou.cr.aliyuncs.com/alinux4/alinux4:latest
     steps:

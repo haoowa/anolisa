@@ -24,7 +24,7 @@ jobs:
   # =========================================================================
   commit-lint:
     name: 📝 Commit Message Lint
-    runs-on: anolisa-k8s-ubuntu22
+    runs-on: anolisa-k8s-general-ci-x64
     steps:
       - uses: actions/checkout@v4
         with:
@@ -44,7 +44,7 @@ jobs:
   # =========================================================================
   pr-checks:
     name: 🔍 PR Checks
-    runs-on: anolisa-k8s-ubuntu22
+    runs-on: anolisa-k8s-general-ci-x64
     steps:
       # -----------------------------------------------------------------------
       # Step 1: PR Title Validation (warning only)
