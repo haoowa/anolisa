@@ -2,7 +2,7 @@
 # install.sh — Register tokenless as a local Claude Code marketplace and
 # install the plugin via the official `claude plugin` CLI.
 #
-# Responsibility boundary (mirrors openclaw/scripts/install.sh):
+# Responsibility boundary:
 #   - This script ONLY deploys an already-stamped plugin manifest.
 #   - Manifest stamping (plugin.json.in -> plugin.json) is the Makefile's job:
 #       make -C src/tokenless stamp-adapter-templates

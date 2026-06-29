@@ -331,8 +331,6 @@ build_agentic_os_skills() {
 
     # component.toml — spec %install installs it to %{_datadir}/anolisa/components/os-skills/
     [ -f "${SKILLS_DIR}/component.toml" ] && cp "${SKILLS_DIR}/component.toml" "$pkg_dir/"
-    # adapters/ — spec %install installs adapter-manifest.json + openclaw/hermes scripts
-    [ -d "${SKILLS_DIR}/adapters" ] && cp -rp "${SKILLS_DIR}/adapters" "$pkg_dir/"
 
     tar -czf "${BUILD_DIR}/SOURCES/${tarball_name}" -C "$tmp_dir" "${pkg_name}-${version}"
     rm -rf "$tmp_dir"
@@ -483,7 +481,7 @@ build_tokenless() {
 
     # Copy full source tree (including vendored rtk), excluding build artifacts and VCS
     # Note: third_party/rtk must be included — it's built separately via --manifest-path
-    # Adapter config files (manifest.json, package.json, openclaw.plugin.json, plugin.yaml)
+    # Adapter config files (package.json, openclaw.plugin.json, plugin.yaml)
     # are excluded because they are generated from .in templates by
     # stamp-adapter-templates during rpmbuild %build (make build-openclaw-plugin).
     tar -cf - -C "$TOKEN_DIR" \
@@ -492,7 +490,6 @@ build_tokenless() {
         --exclude='node_modules' \
         --exclude='__pycache__' \
         --exclude='*.pyc' \
-        --exclude='adapters/tokenless/manifest.json' \
         --exclude='adapters/tokenless/openclaw/package.json' \
         --exclude='adapters/tokenless/openclaw/openclaw.plugin.json' \
         --exclude='adapters/tokenless/hermes/plugin.yaml' \

@@ -16,12 +16,12 @@ BINDIR ?= $(PREFIX)/bin
 LIBEXECDIR ?= $(PREFIX)/libexec/anolisa/tokenless
 DATADIR ?= $(PREFIX)/share
 SHARE_DIR ?= $(DATADIR)/anolisa/adapters/tokenless
+COMPONENT_DIR ?= $(DATADIR)/anolisa/components/tokenless
 BIN_DIR ?= $(BINDIR)
 LIB_DIR ?= $(LIBEXECDIR)
 ADAPTER_SRC_DIR := adapters/tokenless
 OPENCLAW_PLUGIN_SRC_DIR := $(ADAPTER_SRC_DIR)/openclaw
 ADAPTER_TEMPLATES := \
-    $(ADAPTER_SRC_DIR)/manifest.json \
     $(ADAPTER_SRC_DIR)/openclaw/package.json \
     $(ADAPTER_SRC_DIR)/openclaw/openclaw.plugin.json \
     $(ADAPTER_SRC_DIR)/hermes/plugin.yaml \
@@ -39,11 +39,9 @@ VERSION := $(shell grep '^version' Cargo.toml | head -1 | sed 's/.*"\(.*\)".*/\1
 .PHONY: build build-tokenless build-toon build-openclaw-plugin \
         stamp-adapter-templates \
         install uninstall test lint clean \
-        install-binaries install-helpers install-adapter-resources install-cosh-extension \
+        install-binaries install-helpers install-adapter-resources install-component-contract install-cosh-extension \
         adapter-install adapter-uninstall adapter-scan \
         cosh-extension-install cosh-extension-uninstall \
-        openclaw-install openclaw-uninstall \
-        hermes-install hermes-uninstall \
         qoder-install qoder-uninstall \
         claude-code-install claude-code-uninstall \
         codex-install codex-uninstall \
@@ -69,10 +67,6 @@ build-toon:
 
 # Generate adapter config files from .in templates (VERSION from Cargo.toml).
 stamp-adapter-templates: $(ADAPTER_TEMPLATES) $(COMPONENT_CONTRACT)
-
-$(ADAPTER_SRC_DIR)/manifest.json: $(ADAPTER_SRC_DIR)/manifest.json.in Cargo.toml
-	@echo "==> Generating manifest.json (version=$(VERSION))..."
-	sed 's/@VERSION@/$(VERSION)/g' $< > $@
 
 $(COMPONENT_CONTRACT): $(COMPONENT_CONTRACT).in Cargo.toml
 	@echo "==> Generating component contract (version=$(VERSION))..."
@@ -121,7 +115,7 @@ build-openclaw-plugin: stamp-adapter-templates
 	    || { echo "ERROR: $(OPENCLAW_PLUGIN_SRC_DIR)/dist/index.js was not produced"; exit 1; }
 
 # Install binaries + adapter resources per FHS spec.
-install: build install-binaries install-helpers install-adapter-resources install-cosh-extension
+install: build install-binaries install-helpers install-adapter-resources install-component-contract install-cosh-extension
 
 install-binaries:
 	@echo "==> Installing tokenless to $(DESTDIR)$(BINDIR)..."
@@ -149,6 +143,11 @@ install-adapter-resources: build-openclaw-plugin
 	@test -f $(DESTDIR)$(SHARE_DIR)/openclaw/dist/index.js \
 	    || { echo "ERROR: $(DESTDIR)$(SHARE_DIR)/openclaw/dist/index.js missing after install-adapter-resources"; exit 1; }
 
+install-component-contract: stamp-adapter-templates
+	@echo "==> Installing component contract to $(DESTDIR)$(COMPONENT_DIR)..."
+	install -d -m 0755 $(DESTDIR)$(COMPONENT_DIR)
+	install -p -m 0644 $(COMPONENT_CONTRACT) $(DESTDIR)$(COMPONENT_DIR)/component.toml
+
 install-cosh-extension:
 	@echo "==> Installing tokenless cosh extension to $(DESTDIR)$(COSH_EXTENSION_DIR)..."
 	rm -rf $(DESTDIR)$(COSH_EXTENSION_DIR)
@@ -163,6 +162,7 @@ uninstall:
 	rm -f $(DESTDIR)$(LIBEXECDIR)/rtk
 	rm -f $(DESTDIR)$(LIBEXECDIR)/toon
 	rm -rf $(DESTDIR)$(SHARE_DIR)
+	rm -rf $(DESTDIR)$(COMPONENT_DIR)
 	rm -rf $(DESTDIR)$(COSH_EXTENSION_DIR)
 
 # Run tests
@@ -212,13 +212,13 @@ ADAPTER_ENV = ANOLISA_PREFIX=$(HOME)/.local \
               ANOLISA_COMPONENT=tokenless \
               ANOLISA_VERSION=$(VERSION)
 
-adapter-install: cosh-extension-install openclaw-install hermes-install qoder-install claude-code-install codex-install qwencode-install
+adapter-install: cosh-extension-install qoder-install claude-code-install codex-install qwencode-install
 
-adapter-uninstall: cosh-extension-uninstall openclaw-uninstall hermes-uninstall qoder-uninstall claude-code-uninstall codex-uninstall qwencode-uninstall
+adapter-uninstall: cosh-extension-uninstall qoder-uninstall claude-code-uninstall codex-uninstall qwencode-uninstall
 
 adapter-scan:
-	@echo "=== Tokenless Adapter Manifest ==="
-	@python3 -c "import json; m=json.load(open('$(SHARE_DIR)/manifest.json')); print(f\"  component: {m['component']} v{m['version']}\"); [print(f\"  {t:12s} {c['compatibleVersions']:12s} \" + (', '.join(f'{len(v)} {k}' for k,v in c.get('capabilities',{}).items()) or 'no caps')) for t,c in m['targets'].items()]"
+	@echo "=== Tokenless Component Contract ==="
+	@sed -n '1,120p' "$(DESTDIR)$(DATADIR)/anolisa/components/tokenless/component.toml"
 
 # --- Copilot Shell (cosh) — extension format ---
 # cosh uses cosh-extension.json (not adapter scripts) for auto-discovery.
@@ -238,29 +238,6 @@ cosh-extension-uninstall:
 	@echo "==> Uninstalling tokenless cosh extension..."
 	rm -rf $(COSH_EXTENSION_DIR)
 	@echo "==> tokenless cosh extension removed from $(COSH_EXTENSION_DIR)"
-
-# --- OpenClaw ---
-
-openclaw-install:
-	@echo "==> Installing tokenless OpenClaw plugin..."
-	@$(ADAPTER_ENV) ANOLISA_TARGET=openclaw bash $(SHARE_DIR)/openclaw/scripts/detect.sh
-	@$(ADAPTER_ENV) ANOLISA_TARGET=openclaw bash $(SHARE_DIR)/openclaw/scripts/install.sh
-
-openclaw-uninstall:
-	@echo "==> Uninstalling tokenless OpenClaw plugin..."
-	@$(ADAPTER_ENV) ANOLISA_TARGET=openclaw bash $(SHARE_DIR)/openclaw/scripts/uninstall.sh
-
-# --- Hermes Agent ---
-HERMES_ADAPTER_DIR = $(SHARE_DIR)/hermes
-
-hermes-install:
-	@echo "==> Installing Hermes Agent plugin..."
-	@$(ADAPTER_ENV) ANOLISA_TARGET=hermes bash $(HERMES_ADAPTER_DIR)/scripts/detect.sh || true
-	@$(ADAPTER_ENV) ANOLISA_TARGET=hermes bash $(HERMES_ADAPTER_DIR)/scripts/install.sh
-
-hermes-uninstall:
-	@echo "==> Uninstalling Hermes Agent plugin..."
-	@$(ADAPTER_ENV) ANOLISA_TARGET=hermes bash $(HERMES_ADAPTER_DIR)/scripts/uninstall.sh
 
 # --- Qoder CLI ---
 QODER_ADAPTER_DIR = $(SHARE_DIR)/qoder
@@ -330,7 +307,7 @@ setup: install adapter-install
 	@echo "  Adapter (FHS):"
 	@echo "    $(SHARE_DIR)/"
 	@echo "  Registered:"
-	@echo "    cosh, openclaw, hermes, qoder, claude-code, codex, qwencode"
+	@echo "    cosh, qoder, claude-code, codex, qwencode"
 	@echo ""
 	@echo "Verify:"
 	@echo "  tokenless --version"
@@ -354,14 +331,10 @@ help:
 	@echo "  fmt               Format code"
 	@echo "  clean             Clean build artifacts"
 	@echo "  adapter-scan      List registered adapter capabilities"
-	@echo "  adapter-install   Register all adapters (cosh+openclaw+hermes+qoder+claude-code+codex+qwencode)"
+	@echo "  adapter-install   Register adapters with legacy drivers (cosh+qoder+claude-code+codex+qwencode)"
 	@echo "  adapter-uninstall Unregister all adapters"
 	@echo "  cosh-extension-install  Install cosh extension"
 	@echo "  cosh-extension-uninstall Uninstall cosh extension"
-	@echo "  openclaw-install  Register OpenClaw plugin"
-	@echo "  openclaw-uninstall Unregister OpenClaw plugin"
-	@echo "  hermes-install    Install Hermes Agent plugin"
-	@echo "  hermes-uninstall  Uninstall Hermes Agent plugin"
 	@echo "  qoder-install     Register Qoder CLI plugin"
 	@echo "  qoder-uninstall   Unregister Qoder CLI plugin"
 	@echo "  claude-code-install   Register Claude Code plugin via claude CLI"

@@ -134,10 +134,11 @@ The adapter provides hooks that are auto-discovered by copilot-shell via the cos
 ### Install
 
 ```bash
-make cosh-extension-install  # or: make openclaw-install, make hermes-install
+make cosh-extension-install
 ```
 
 Hooks are registered via the cosh extension manifest (`cosh-extension.json`) and auto-discovered by copilot-shell — no manual `settings.json` configuration needed.
+OpenClaw and Hermes plugin registration is handled by anolisa-cli using the component contract.
 
 ## Tool Ready
 
@@ -232,7 +233,7 @@ Each hook degrades gracefully — if the corresponding binary is not installed, 
 ### Install
 
 ```bash
-make hermes-install
+anolisa component install tokenless --framework hermes
 ```
 
 Enable the plugin:
@@ -318,14 +319,10 @@ make codex-install
 | `make lint` | Run clippy checks |
 | `make fmt` | Format code |
 | `make clean` | Clean build artifacts |
-| `make adapter-install` | Install all adapters (cosh + openclaw + hermes) |
-| `make adapter-uninstall` | Remove all adapters |
+| `make adapter-install` | Install legacy-driver adapters (cosh + qoder + claude-code + codex + qwencode) |
+| `make adapter-uninstall` | Remove legacy-driver adapters |
 | `make cosh-extension-install` | Install Copilot Shell extension |
 | `make cosh-extension-uninstall` | Remove Copilot Shell extension |
-| `make openclaw-install` | Install OpenClaw plugin |
-| `make openclaw-uninstall` | Remove OpenClaw plugin |
-| `make hermes-install` | Install Hermes Agent plugin |
-| `make hermes-uninstall` | Remove Hermes Agent plugin |
 | `make qoder-install` | Install Qoder CLI plugin |
 | `make qoder-uninstall` | Remove Qoder CLI plugin |
 | `make claude-code-install` | Install Claude Code plugin |

@@ -1557,7 +1557,6 @@ build_tokenless() {
         if [[ ! -d "$component_root/share/anolisa/extensions/tokenless" ]]; then
             warn "tokenless cosh extension staged empty"
         fi
-        stage_adapter_manifest "tokenless" "$PROJECT_ROOT/src/tokenless/adapters/tokenless/manifest.json"
         ok "tokenless, rtk, and toon built successfully"
     else
         [[ -f "$bin" ]]     || warn "Expected artifact $bin not found"
@@ -1582,7 +1581,6 @@ build_wsckpt() {
     component_root="$(component_target_dir ws-ckpt)"
     bin="$component_root/bin/ws-ckpt"
     if [[ -f "$bin" ]]; then
-        stage_adapter_manifest "ws-ckpt" "$PROJECT_ROOT/src/ws-ckpt/adapter-manifest.json"
         ok "ws-ckpt built successfully"
     else
         warn "Expected artifact $bin not found"
