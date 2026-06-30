@@ -168,10 +168,6 @@ runs:
         patch --forward -p1 --no-backup-if-mismatch \
           -d third_party/rtk < third_party/patches/rtk-tokenless-stats.patch
         patch --forward -p1 --no-backup-if-mismatch \
-          -d third_party/rtk < third_party/patches/rtk-grep-fallback-fix.patch
-        patch --forward -p1 --no-backup-if-mismatch \
-          -d third_party/rtk < third_party/patches/rtk-preflight-skip-python.patch
-        patch --forward -p1 --no-backup-if-mismatch \
           -d third_party/rtk < third_party/patches/rtk-pytest-error-report.patch
 
         rm -rf third_party/rtk/.git
