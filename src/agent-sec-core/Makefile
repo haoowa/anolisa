@@ -382,7 +382,7 @@ install-systemd-user: ## Install agent-sec-core systemd user service
 	install -p -m 0644 $(SYSTEMD_USER_UNIT_SOURCE) $(DESTDIR)$(SYSTEMD_USER_UNIT_DIR)/agent-sec-core.service
 
 .PHONY: install-all
-install-all: install-cli-venv install-cosh-hook install-openclaw-plugin install-hermes-plugin install-skills install-component-manifest ## Install all (user source build)
+install-all: install-cli-venv install-cosh-hook install-openclaw-plugin install-hermes-plugin install-skills ## Install all (user source build)
 
 .PHONY: install-all-for-rpmbuild
 install-all-for-rpmbuild: OPENCLAW_PLUGIN_DIR := $(RPM_OPENCLAW_PLUGIN_DIR)
@@ -433,7 +433,7 @@ uninstall-component-manifest: ## Remove component manifest
 	rm -rf $(DESTDIR)$(COMPONENT_DIR)
 
 .PHONY: uninstall
-uninstall: uninstall-cli-venv uninstall-cosh-hook uninstall-openclaw-plugin uninstall-hermes-plugin uninstall-skills uninstall-component-manifest ## Uninstall everything install-all installed
+uninstall: uninstall-cli-venv uninstall-cosh-hook uninstall-openclaw-plugin uninstall-hermes-plugin uninstall-skills ## Uninstall everything install-all installed
 
 .PHONY: help
 help: ## Show this help message

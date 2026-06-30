@@ -20,7 +20,8 @@ env:
 jobs:
   build-rpm:
     name: Build agent-sec-core RPM
-    runs-on: anolisa-k8s-general-ci-x64
+    # workflow_dispatch (manual/fork) -> GitHub-hosted; pull_request -> ARC runner.
+    runs-on: ${{ github.event_name == 'workflow_dispatch' && 'ubuntu-22.04' || 'anolisa-k8s-general-ci-x64' }}
     container:
       image: alibaba-cloud-linux-4-registry.cn-hangzhou.cr.aliyuncs.com/alinux4/alinux4:latest
     steps:
