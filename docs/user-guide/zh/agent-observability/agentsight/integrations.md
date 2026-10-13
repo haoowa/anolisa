@@ -134,10 +134,17 @@ curl -s http://127.0.0.1:7396/metrics
 ### 通过 API 记录统计数据
 
 配置 `tokenless_api` 后，已认证的 `POST /api/tokenless/refresh` 接收
-`{"session_id":"source-session"}` 或 `{"tool_use_id":"captured-tool-id"}`，以事务保存
+`{"session_id":"source-session"}`、`{"tool_use_id":"captured-tool-id"}` 或不筛选的 `{}`（每批 100 条），以事务保存
 有界查询结果（最多 1,000 条 / 8 MiB）。超限时整体失败，不保存部分结果；请缩小过滤
 范围。即使从 loopback 访问，刷新也需要 AgentSight 凭据。`GET /api/tokenless/records`
 列出已保存的元数据，支持 `start_ns`、`end_ns`、`session_id`、`tool_use_id` 和 `limit`
 （1–100），默认查询最近 24 小时。网络或查询失败会明确返回，已保存的数据仍可查看。
 原始字段保持不变。仅当采集到的 tool-call ID 唯一对应本地会话时填充
 `agentsight_session_id`；缺失或歧义关联保持 null。
+
+已保存的列表还支持 `before_cache_id`，按本地 ID 倒序分页，返回 `next_before_cache_id`。
+`GET /api/tokenless/records/{cache_id}?include_content=true` 请求完整内容；不传此标志时
+返回元数据。配置 API 后，现有节省接口使用 API 副本，排除 DryRun 和未知模式，避免
+与本地数据库统计重复计算。
+
+不筛选的回复可包含字符串 `next_before_id`；传入 `{"before_id":"42"}` 记录下一批。这是普通查询参数，不保存 checkpoint，也不保证跨重启恢复。

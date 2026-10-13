@@ -2251,3 +2251,32 @@ export async function runCausalAttribution(
     },
   );
 }
+
+
+export interface SavedTokenlessRecord {
+  cache_id: number;
+  source: string;
+  agentsight_session_id: string | null;
+  record: { id: number; timestamp: string; session_id: string | null; tool_use_id: string | null;
+    mode: string | null; operation: string | null; before_tokens: number; after_tokens: number;
+    content_included: boolean; before_text?: string | null; after_text?: string | null;
+    before_output?: string | null; after_output?: string | null; [field: string]: unknown };
+}
+
+export async function fetchTokenlessRecords(startNs: number, endNs: number, beforeId?: number):
+  Promise<{ records: SavedTokenlessRecord[]; next_before_cache_id: number | null; api_configured: boolean }> {
+  const query = new URLSearchParams({ start_ns: String(startNs), end_ns: String(endNs), limit: '50' });
+  if (beforeId) query.set('before_cache_id', String(beforeId));
+  return apiFetch(`${API_BASE}/api/tokenless/records?${query}`);
+}
+
+export async function refreshTokenlessRecords(sessionId: string, toolId: string, beforeId?: string): Promise<{ saved: number; next_before_id: string | null }> {
+  const filter = { ...(sessionId ? { session_id: sessionId } : {}), ...(toolId ? { tool_use_id: toolId } : {}), ...(beforeId ? { before_id: beforeId } : {}) };
+  return apiFetch(`${API_BASE}/api/tokenless/refresh`, {
+    method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(filter),
+  });
+}
+
+export async function fetchTokenlessRecord(id: number): Promise<{ record: SavedTokenlessRecord }> {
+  return apiFetch(`${API_BASE}/api/tokenless/records/${id}?include_content=true`);
+}

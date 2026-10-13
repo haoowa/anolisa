@@ -213,6 +213,7 @@ function renderSecurityPage() {
   const driver = createHooksDriver();
   const moduleStubs = {
     '../i18n': { useI18n: () => ({ t: (key) => key }) },
+    '../components/TokenlessRecords': { TokenlessRecords: () => null },
     '../components/DateTimePicker': componentStub('DateTimePicker'),
     '../utils/apiClient': { ...stubs },
     './security/EventDetailDrawer': componentStub('EventDetailDrawer'),

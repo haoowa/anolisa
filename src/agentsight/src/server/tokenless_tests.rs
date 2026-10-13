@@ -55,7 +55,8 @@ fn client_pagination_authentication_and_config_boundaries() {
             session_id: Some("fixture".into()),
             ..Default::default()
         })
-        .unwrap();
+        .unwrap()
+        .0;
     assert_eq!(
         rows.iter()
             .map(|row| row["id"].as_i64().unwrap())
@@ -64,7 +65,10 @@ fn client_pagination_authentication_and_config_boundaries() {
     );
     worker.join().unwrap();
     assert!(matches!(
-        client.fetch(&Filter::default()),
+        client.fetch(&Filter {
+            session_id: Some(String::new()),
+            ..Default::default()
+        }),
         Err(QueryError::Invalid)
     ));
     std::fs::write(&configuration, "{}").unwrap();

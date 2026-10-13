@@ -6,6 +6,7 @@ import {
 import { fetchTokenSavings, fetchAgentNames } from '../utils/apiClient';
 import { downloadSavingsCsv } from '../utils/savingsCsv';
 import type { SessionSavings, SavingsSummary, OptimizationItem, DiffLine, StrategyBreakdownItem, OptimizationTip } from '../utils/apiClient';
+import { TokenlessRecords } from '../components/TokenlessRecords';
 import { DateTimePicker } from '../components/DateTimePicker';
 import { SessionIdHelp } from '../components/SessionIdHelp';
 import { compoundedSavingsRate } from '../utils/savings';
@@ -627,6 +628,7 @@ export const TokenSavingsPage: React.FC = () => {
 
   return (
     <main className="max-w-screen-xl mx-auto px-6 py-6 space-y-6">
+      <TokenlessRecords startMs={startMs} endMs={endMs} onRefresh={() => void handleQuery()} />
       {/* ── Filter bar ── */}
       <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 flex flex-wrap items-end gap-4">
         {/* Time range */}

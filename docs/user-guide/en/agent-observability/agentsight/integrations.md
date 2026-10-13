@@ -147,7 +147,9 @@ report, or import the session into another AgentSight instance through the Traje
 ### Record statistics through the API
 
 With `tokenless_api` configured, authenticated `POST /api/tokenless/refresh` accepts
-`{"session_id":"source-session"}` or `{"tool_use_id":"captured-tool-id"}`. It records a
+`{"session_id":"source-session"}`, `{"tool_use_id":"captured-tool-id"}`, or `{}` to record one source page (100 records). Unfiltered replies include an optional
+string `next_before_id`; pass `{"before_id":"42"}` to record the next page. This is an ordinary
+query parameter, without a persisted checkpoint or restart-recovery guarantee. It records a
 bounded query (at most 1,000 records / 8 MiB) atomically. An oversized query fails without
 saving a partial result; narrow the filter. Refresh requires an AgentSight credential,
 even from loopback. `GET /api/tokenless/records` lists saved metadata with optional
@@ -155,3 +157,8 @@ even from loopback. `GET /api/tokenless/records` lists saved metadata with optio
 is the last 24 hours. Network/query failures are explicit, and saved records remain readable.
 Original fields are preserved. `agentsight_session_id` is populated only when a captured
 tool-call ID uniquely matches a local session; missing or ambiguous associations remain null.
+
+Saved lists also accept `before_cache_id` for descending local-ID pagination and return
+`next_before_cache_id`. `GET /api/tokenless/records/{cache_id}?include_content=true` requests
+full content; omitting the flag returns metadata. Configured API copies supply the existing
+savings endpoints, excluding DryRun/unknown modes and avoiding duplicate local-database accounting.

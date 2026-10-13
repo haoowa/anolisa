@@ -66,7 +66,7 @@ components on every page load and reports the result through `GET /api/auth/stat
 | Page | Appears when |
 |---|---|
 | Agent Dashboard, Agent Observability, Sessions, Reuse Labels, Optimization, Skill Metrics, Trajectory Viewer, Settings | Always |
-| Token Savings | `tokenless` is installed, or its statistics database exists |
+| Token Savings | `tokenless` is installed, its statistics database exists, or a Tokenless API is configured |
 | Security Observability, System Audit | `agent-sec-core` is installed (daemon or CLI) |
 | Risk Enforcement | `agentsight-enforcer` is installed or its socket exists |
 
@@ -240,3 +240,21 @@ See [Data and storage](data-and-storage.md#http-api) for the endpoint groups.
 - [Interruption detection](interruption-detection.md) — what the badges mean
 - [Configuration](configuration.md#dashboard-authentication) — authentication switch
 - [Troubleshooting](troubleshooting.md) — 401, unreachable port, empty pages
+
+### Recorded Tokenless statistics
+
+When `tokenless_api` is configured, Token Savings includes a recorded-statistics table.
+Optionally enter a source session ID or tool-call ID and select **Query and record**.
+Leaving both empty includes records without attribution in source pages of 100;
+**Record next source page** records the next batch. Filtered queries retain the recording budget. Repeating a
+query updates the saved copy without double counting. Pages contain 50 records; **Next page**
+and **Newest page** read saved metadata within the selected time range.
+
+**View stored content** explicitly retrieves and saves source text/output. Both query and
+detail access require the existing AgentSight login, including loopback requests. Content
+not present in the source stays unavailable. Original timestamps, IDs and modes remain
+visible; missing or ambiguous local associations show **Unassociated**. Only uniquely
+associated `active` records from the configured endpoint contribute to applied savings.
+DryRun and unknown modes stay visible in the table. Saved content and statistics remain
+readable after restarting AgentSight while Tokenless is offline. A changed source record
+is rejected rather than attaching its content to an older saved copy.

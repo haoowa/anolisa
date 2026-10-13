@@ -216,6 +216,7 @@ function makeHarness() {
     '../utils/apiClient': { ...stubs },
     '../utils/savings': savingsModule,
     '../utils/savingsCsv': { downloadSavingsCsv: (rows) => downloads.push(rows) },
+    '../components/TokenlessRecords': { TokenlessRecords: () => null },
     '../components/DateTimePicker': componentStub('DateTimePicker'),
     '../components/SessionIdHelp': componentStub('SessionIdHelp'),
     '../i18n': {

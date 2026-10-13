@@ -61,7 +61,7 @@ sudo systemctl reload agentsight.service
 | 页面 | 出现条件 |
 |---|---|
 | Agent 看板、Agent 可观测、会话列表、复用标签、优化分析、Skill 指标、轨迹查看、设置 | 始终显示 |
-| Token 节省 | 装了 `tokenless`，或其统计数据库已存在 |
+| Token 节省 | 装了 `tokenless`、其统计数据库已存在，或已配置 Tokenless API |
 | 安全可观测、系统审计 | 装了 `agent-sec-core`（daemon 或 CLI 均可） |
 | 风险拦截 | 装了 `agentsight-enforcer` 或其 socket 存在 |
 
@@ -210,3 +210,16 @@ curl -s -H "Authorization: Bearer $TOKEN" http://<host>:7396/api/sessions
 - [中断检测](interruption-detection.md)——界面上的中断标记是什么意思
 - [配置](configuration.md#dashboard-认证)——认证开关
 - [排查](troubleshooting.md)——401、端口不通、页面空白
+
+### 已记录的 Tokenless 统计
+
+配置 `tokenless_api` 后，Token Savings 提供已记录统计表。输入源会话 ID 或 tool-call
+ID（可选），点击**查询并记录**。留空查询也包含无归属记录，每批 100 条；**记录下一批源数据**继续记录。筛选查询受记录预算限制。重复查询更新已保存的副本，不重复计数。每页显示 50 条，
+**下一页**和**最新页**在所选时间范围内读取已保存的元数据。
+
+**查看已存内容**显式获取并保存源文本或输出。查询和详情访问均复用现有 AgentSight
+登录，即使访问来自 loopback。源数据没有保存的内容显示为不可用。原始时间戳、ID 和
+模式保持可见；本地关联缺失或存在歧义时显示**未关联**。只有来自已配置端点、具有
+唯一关联的 `active` 记录纳入实际节省；DryRun 和未知模式仍在统计表中显示。
+Tokenless 离线且 AgentSight 重启后仍可读取已保存的内容和统计。源记录已变化时拒绝
+返回其内容，避免将新内容附加到旧副本。

@@ -285,3 +285,38 @@ impl Drop for AuthFixture {
         let _ = std::fs::remove_dir_all(&self.directory);
     }
 }
+
+#[actix_web::test]
+async fn tokenless_content_proxy_requires_a_dashboard_credential() {
+    let fixture = AuthFixture::new();
+    let app = awtest::init_service(
+        App::new()
+            .wrap(AuthMiddleware::new(Arc::clone(&fixture.auth)))
+            .route(
+                "/api/tokenless/records/{id}",
+                web::get().to(|| async { HttpResponse::Ok().finish() }),
+            ),
+    )
+    .await;
+    let loopback = SocketAddr::new(IpAddr::V4(Ipv4Addr::LOCALHOST), 12345);
+    let token = fixture.auth.read_token_from_file().unwrap();
+    for uri in ["/api/tokenless/records/1", "/%61pi/tokenless/records/1"] {
+        let request = awtest::TestRequest::get()
+            .uri(uri)
+            .peer_addr(loopback)
+            .to_request();
+        assert_eq!(
+            awtest::call_service(&app, request).await.status(),
+            StatusCode::UNAUTHORIZED
+        );
+        let request = awtest::TestRequest::get()
+            .uri(uri)
+            .peer_addr(loopback)
+            .insert_header(("Authorization", format!("Bearer {token}")))
+            .to_request();
+        assert_eq!(
+            awtest::call_service(&app, request).await.status(),
+            StatusCode::OK
+        );
+    }
+}
