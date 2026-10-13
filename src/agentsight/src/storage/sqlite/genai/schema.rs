@@ -20,12 +20,14 @@ enum PruneTable {
     Events,
     Resources,
     Evaluations,
+    Tokenless,
 }
 
 impl GenAISqliteStore {
     /// Initialize database tables
     pub(super) fn init_tables(&self) -> Result<(), Box<dyn std::error::Error>> {
         let conn = self.conn.lock().unwrap_or_else(|e| e.into_inner());
+        super::tokenless::init_tables(&conn)?;
         // This migration must run before any index that references the added
         // column: on databases created before conversation_id existed,
         // creating the index first aborts the batch and the `?` below returns
@@ -309,6 +311,10 @@ impl GenAISqliteStore {
             params![cutoff_i64],
         )?;
         deleted += conn.execute(
+            "DELETE FROM tokenless_statistics WHERE timestamp_ns < ?1",
+            params![cutoff_i64],
+        )?;
+        deleted += conn.execute(
             "DELETE FROM agent_resource_samples WHERE timestamp_ns < ?1",
             params![cutoff_i64],
         )?;
@@ -364,6 +370,12 @@ impl GenAISqliteStore {
             };
 
         let candidates = [
+            {
+                let (count, bytes): (i64,i64) = conn.query_row(
+                    "SELECT COUNT(*),COALESCE(SUM(LENGTH(record_json)),0) FROM tokenless_statistics", [],
+                    |row| Ok((row.get(0)?,row.get(1)?)))?;
+                (bytes.max(count), PruneTable::Tokenless, count)
+            },
             (
                 event_bytes.max(event_count),
                 PruneTable::Events,
@@ -389,6 +401,11 @@ impl GenAISqliteStore {
         };
         let delete_count = prune_count(count, pct);
         match table {
+            PruneTable::Tokenless => Ok(conn.execute(
+                "DELETE FROM tokenless_statistics WHERE cache_id IN (
+                SELECT cache_id FROM tokenless_statistics ORDER BY timestamp_ns,cache_id LIMIT ?1)",
+                params![delete_count],
+            )?),
             PruneTable::Events => Ok(conn.execute(
                 "DELETE FROM genai_events WHERE id IN (
                     SELECT id FROM genai_events WHERE status != 'pending'
