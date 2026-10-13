@@ -402,6 +402,45 @@ tokenless env-check --tool Shell --fix
 
 ## `stats`
 
+### 只读 HTTP 查询
+
+对已有统计数据库运行独立查询服务：
+
+```bash
+tokenless stats serve --data-dir /var/lib/tokenless \
+  --credential-file /run/secrets/tokenless-query
+```
+
+这两个路径均为部署占位值。`--data-dir` 必须是包含 `stats.db` 的绝对目录，
+服务不会创建或迁移数据库。`--credential-file` 包含非空、无空格的 ASCII
+Bearer 凭据（含末尾换行最多 4096 字节），启动时读取，轮换后需要重启服务。
+通过凭据文件或 Kubernetes Secret 挂载；AgentSight 后端使用该凭据，
+用户登录仍由 AgentSight 自己处理。
+
+默认监听 `127.0.0.1:7397`。使用 `--listen <address>:<port>` 指定私有服务端点。
+远程传输需通过私有网络或 TLS 反向代理保护；该监听器提供 HTTP，不提供 TLS。
+
+| GET 接口 | 查询选项 | 响应 |
+|---|---|---|
+| `/v1/stats/records` | `limit`（默认 50，最多 100）、`before_id`、`session_id`、`tool_use_id` | `schema_version: 1`、`records`、`next_before_id` |
+| `/v1/stats/records/<id>` | `include_content=true` 请求已存储的 text/output | `schema_version: 1`、`record` |
+
+所有请求需要 `Authorization: Bearer <credential>`。缺失、错误或重复凭据
+返回 401，不接受 cookie 或查询参数中的凭据。数据响应使用
+`Cache-Control: no-store`。
+
+列表不包含内容。详情返回显式请求的全部已存储内容，`content_included`
+区分未请求内容与内容未存储时的 null。响应超过 8 MiB 时返回 413，不会
+静默截断。保留原始记录时间和字段，包括历史缺失的 mode 以及 RTK 记录。
+分页用于浏览当前数据库，不提供清空或替换数据库后的恢复能力。
+
+错误格式为 `{"schema_version":1,"error":{"code":"..."}}`：无效查询返回
+400，记录或路由不存在返回 404，其他方法返回 405，损坏记录返回 500，
+数据库不可用或不受支持返回 503。CLI/hook 退出后，服务仍可查询已提交记录。
+停止查询服务不影响压缩。
+
+### 本地命令
+
 ```bash
 tokenless stats summary
 tokenless stats summary --json

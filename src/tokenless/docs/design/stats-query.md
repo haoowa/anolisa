@@ -29,5 +29,5 @@ a query entry point for integrations that need the original recorded data.
   are errors. No row is silently skipped to return a successful partial page.
 
 The reader uses SQLite read-only access with a 500 ms busy timeout. A live WAL
-database still requires access to its SQLite sidecar files. This library does
-not provide an HTTP listener or credentials; those belong to the service layer.
+database still requires access to its SQLite sidecar files. HTTP and credentials
+belong to the optional `query-server` service layer.

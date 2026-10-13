@@ -322,6 +322,7 @@ test-integration: test-hook-parity test-claude-code-detect test-toon-cleanup tes
 	python3 tests/test_release_regression_probe.py
 	python3 tests/test_qwenpaw_plugin.py
 	python3 tests/test_cosh_ng_compat.py
+	python3 tests/test_stats_http.py
 
 # The L1 runner records an `rtk_version` in benchmark_identity.json through a
 # best-effort probe that must never stall the suite: a bare `$RTK_BIN` is

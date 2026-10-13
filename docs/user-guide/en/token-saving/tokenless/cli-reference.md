@@ -419,6 +419,50 @@ tokenless env-check --tool Shell --fix
 
 ## `stats`
 
+### Read-only HTTP queries
+
+Run a standalone query service over an existing statistics database:
+
+```bash
+tokenless stats serve --data-dir /var/lib/tokenless \
+  --credential-file /run/secrets/tokenless-query
+```
+
+Both paths are deployment placeholders. `--data-dir` must be an absolute
+directory containing `stats.db`; the service never creates or migrates it.
+`--credential-file` contains a nonempty ASCII Bearer credential without spaces
+(up to 4096 bytes, including any final newline). It is read at startup, so
+restart the service after rotation. Mount a credential file or Kubernetes Secret;
+AgentSight's backend uses it independently of AgentSight's user login.
+
+The default listener is `127.0.0.1:7397`. Use `--listen <address>:<port>` for
+a private service endpoint. Protect remote transport with a private network
+or TLS reverse proxy; this listener provides HTTP, not TLS.
+
+| GET endpoint | Query options | Response |
+|---|---|---|
+| `/v1/stats/records` | `limit` (default 50, maximum 100), `before_id`, `session_id`, `tool_use_id` | `schema_version: 1`, `records`, `next_before_id` |
+| `/v1/stats/records/<id>` | `include_content=true` to request stored text/output | `schema_version: 1`, `record` |
+
+Every request requires `Authorization: Bearer <credential>`. Missing, invalid,
+or duplicate credentials return 401; cookies and query-string credentials are
+not accepted. Data responses use `Cache-Control: no-store`.
+
+List responses exclude content. Details return all requested stored content;
+`content_included` distinguishes excluded content from null content that was
+not stored. Responses over 8 MiB fail with 413 instead of truncating content.
+Original record times and fields are preserved, including null historical mode
+values and RTK records. Pagination browses the current database and does not
+provide recovery after clearing or replacing it.
+
+Errors have the shape `{"schema_version":1,"error":{"code":"..."}}`:
+400 for invalid queries, 404 for absent records/routes, 405 for other methods,
+500 for corrupt records, and 503 for unavailable/unsupported databases.
+Producer CLI/hook processes may exit while this service continues querying
+their committed records. Stopping the service does not affect compression.
+
+### Local commands
+
 ```bash
 tokenless stats summary
 tokenless stats summary --json
